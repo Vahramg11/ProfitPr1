@@ -23,29 +23,28 @@ class OptionSerial(serializers.ModelSerializer):
 
 class PollSerial(serializers.ModelSerializer):
     options = OptionSerial(many=True)
+    used = serializers.BooleanField(allow_null=True)
+
+    class Meta:
+        model = Poll
+        exclude = ["users"]
+
+
+class PollOptionSerial(serializers.ModelSerializer):
+    options = OptionSerial(many=True)
 
     class Meta:
         model = Poll
         fields = "__all__"
 
-class PollOptionSerial(serializers.Serializer):
-    options = OptionSerial(many=True)
-    name = serializers.CharField()
-    total_count = serializers.IntegerField(default=0)
-    active=serializers.BooleanField(default=False)
-    category=serializers.IntegerField()
-
-
     def create(self, validated_data):
         options_data = validated_data.pop('options')
-        print("hello", validated_data)
-        category = Category.objects.get(id=1)
-        print("categ", category)
-        validated_data = {**validated_data, "category": category}
+        print(options_data)
         poll = Poll.objects.create(**validated_data)
+        print(poll)
         for option_data in options_data:
-            Option.objects.create(**option_data)
-
+            opt = Option.objects.create(**option_data, poll=poll)
+            print(opt)
         return poll
 
 
